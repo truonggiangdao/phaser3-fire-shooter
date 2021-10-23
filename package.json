@@ -1,9 +1,9 @@
 {
   "name": "phaser3-fire-shooter",
   "version": "0.0.1",
-  "description": "Sensible webpack 5 boilerplate using Babel and PostCSS.",
+  "description": "A sample game made just to practice Phaser 3",
   "main": "src/index.js",
-  "author": "Tania Rascia",
+  "author": "Giang Dao",
   "license": "MIT",
   "homepage": "https://truonggiangdao.github.io/phaser3-fire-shooter/",
   "scripts": {
@@ -28,6 +28,8 @@
     "cross-env": "^7.0.3",
     "css-loader": "^6.4.0",
     "css-minimizer-webpack-plugin": "^3.1.1",
+    "dotenv": "^10.0.0",
+    "dotenv-webpack": "^7.0.3",
     "eslint": "^7.28.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^8.3.0",
