@@ -113,7 +113,7 @@ export class MainScene extends Phaser.Scene {
 
   updateScore(score: number) {
     document.getElementById('score').innerHTML = String(score);
-    if (score >= 2) {
+    if (score >= 10) {
       setTimeout(() => {
         this.scene.pause();
         document.getElementById('result').classList.add('win');
