@@ -31,7 +31,6 @@ module.exports = {
       patterns: [
         {
           from: paths.public,
-          to: 'assets',
           globOptions: {
             ignore: ['*.DS_Store'],
           },
