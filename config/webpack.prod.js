@@ -1,16 +1,18 @@
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
-const { merge } = require('webpack-merge')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const { merge } = require('webpack-merge');
 
-const paths = require('./paths')
-const common = require('./webpack.common.js')
+const paths = require('./paths');
+const common = require('./webpack.common.js');
+
+const PUBLIC_PATH = process.env.PUBLIC_PATH || '/';
 
 module.exports = merge(common, {
   mode: 'production',
   devtool: false,
   output: {
     path: paths.build,
-    publicPath: '/',
+    publicPath: PUBLIC_PATH,
     filename: 'js/[name].[contenthash].bundle.js',
   },
   module: {
@@ -52,4 +54,4 @@ module.exports = merge(common, {
     maxEntrypointSize: 512000,
     maxAssetSize: 512000,
   },
-})
+});

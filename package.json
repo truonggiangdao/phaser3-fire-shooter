@@ -1,10 +1,11 @@
 {
-  "name": "webpack-boilerplate",
-  "version": "3.0.0",
+  "name": "phaser3-fire-shooter",
+  "version": "0.0.1",
   "description": "Sensible webpack 5 boilerplate using Babel and PostCSS.",
-  "main": "index.js",
+  "main": "src/index.js",
   "author": "Tania Rascia",
   "license": "MIT",
+  "homepage": "https://truonggiangdao.github.io/phaser3-fire-shooter/",
   "scripts": {
     "start": "cross-env NODE_ENV=development webpack serve --config config/webpack.dev.js",
     "build": "cross-env NODE_ENV=production webpack --config config/webpack.prod.js",
