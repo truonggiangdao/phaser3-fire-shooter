@@ -26,6 +26,13 @@ export const fireball = {
   height: 84,
 };
 
+export const bomb = {
+  name: 'bomb',
+  src: 'images/bomb.png',
+  width: 14,
+  height: 14,
+};
+
 export const dude = {
   name: 'dude',
   src: 'images/dude.png',

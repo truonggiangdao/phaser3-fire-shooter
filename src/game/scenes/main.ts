@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
+import { bombSound, shootSound, entrySound, explosionSound } from '../assets/audio';
 import { sky, ground, fireball, dude, star } from '../assets/images';
+import { SceneSound } from './sceneSound';
+import { createWelcomeDiv } from './welcome';
 
 export class MainScene extends Phaser.Scene {
   bg: Phaser.GameObjects.Image;
@@ -10,6 +13,15 @@ export class MainScene extends Phaser.Scene {
   player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
   score: number = 0;
+  life: number = 1;
+  scoreText: Phaser.GameObjects.Text;
+  lifeText: Phaser.GameObjects.Text;
+  sceneSounds: SceneSound = {
+    entry: null,
+    explosion: null,
+    shoot: null,
+    bomb: null
+  };
 
   shootTimer = null;
 
@@ -19,6 +31,11 @@ export class MainScene extends Phaser.Scene {
     this.load.image(fireball.name, fireball.src);
     this.load.image(star.name, star.src);
     this.load.spritesheet(dude.name, dude.src, { frameWidth: dude.frame.width, frameHeight: dude.frame.height });
+
+    this.load.audio(entrySound.name, entrySound.src);
+    this.load.audio(explosionSound.name, explosionSound.src);
+    this.load.audio(shootSound.name, shootSound.src);
+    this.load.audio(bombSound.name, bombSound.src);
   }
 
   initPlatforms() {
@@ -26,9 +43,6 @@ export class MainScene extends Phaser.Scene {
 
     this.platforms.create(400, 568, ground.name).setScale(2).refreshBody();
     this.platforms.create(400, (-1 * ground.height - star.height), ground.name).setScale(2).refreshBody();
-    // this.platforms.create(600, 400, ground.name);
-    // this.platforms.create(50, 250, ground.name);
-    // this.platforms.create(750, 220, ground.name);
   }
 
   initPlayer() {
@@ -88,22 +102,28 @@ export class MainScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
   }
 
+  initSound() {
+    this.sceneSounds.entry = this.sound.add(entrySound.name);
+    this.sceneSounds.explosion = this.sound.add(explosionSound.name);
+    this.sceneSounds.shoot = this.sound.add(shootSound.name);
+    this.sceneSounds.bomb = this.sound.add(bombSound.name);
+  }
+
   shootFireBall() {
     const playerPosition = this.player.getTopCenter();
     const fire: Phaser.Types.Physics.Arcade.ImageWithDynamicBody = this.fires.splice(0, 1)[0];
     fire.enableBody(true, playerPosition.x, playerPosition.y, true, true);
     fire.addToDisplayList();
     fire.addToUpdateList();
+    this.sceneSounds.shoot.play();
   }
 
   repositionStar(platforms: any, obj: Phaser.Types.Physics.Arcade.GameObjectWithBody) {
-    console.log(obj);
     obj.body.x = Phaser.Math.FloatBetween(50, 750);
     obj.body.y = Phaser.Math.FloatBetween(200, 400);
   }
 
   repositionFireball(platforms: any, obj: Phaser.Types.Physics.Arcade.GameObjectWithBody) {
-    console.log(obj);
     obj.body.x = -100;
     obj.body.y = -100;
     obj.removeFromDisplayList();
@@ -112,7 +132,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   updateScore(score: number) {
-    document.getElementById('score').innerHTML = String(score);
+    this.scoreText.setText('Score: ' + score);
     if (score >= 10) {
       setTimeout(() => {
         this.scene.pause();
@@ -127,6 +147,7 @@ export class MainScene extends Phaser.Scene {
     this.repositionFireball(null, obj2);
     this.score += 1;
     this.updateScore(this.score);
+    this.sceneSounds.explosion.play();
   }
 
   handlePlayerMovements(player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
@@ -156,12 +177,13 @@ export class MainScene extends Phaser.Scene {
       if (this.shootTimer) {
         clearInterval(this.shootTimer);
         this.shootTimer = null;
-        console.log('stop fire');
       }
     }
   }
 
   create() {
+    this.initSound();
+
     this.bg = this.add.image(0, 0, sky.name).setOrigin(0, 0);
 
     this.initPlatforms();
@@ -178,9 +200,16 @@ export class MainScene extends Phaser.Scene {
 
     this.initCursor();
 
-    setTimeout(() => {
-      document.getElementById('score-board').style.opacity = '1';
-    }, 2000);
+    this.scoreText = this.add.text(16, 16, 'Score: ' + this.score, { fontSize: '16px', color: '#000' });
+    this.lifeText = this.add.text(150, 16, 'Life: ' + + this.life, { fontSize: '16px', color: 'red' });
+
+    this.scene.pause();
+    const div = createWelcomeDiv();
+    div.addEventListener('click', () => {
+      this.sceneSounds.entry.play();
+      div.classList.add('hide');
+      this.scene.resume();
+    });
   }
 
   update() {

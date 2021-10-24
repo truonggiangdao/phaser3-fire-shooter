@@ -59,3 +59,44 @@ body {
   color: red;
   opacity: 1;
 }
+
+#welcome {
+  position: fixed;
+  z-index: 100;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  text-align: center;
+  font-family: monospace;
+  max-width: 90vw;
+}
+
+.welcome-text {
+  padding: 5px 0;
+  line-height: 20px;
+}
+
+.welcome-text strong {
+  display: inline-block;
+  padding: 0px 4px;
+  background: rgb(160, 160, 160);
+  color: rgb(255, 81, 81);
+}
+
+.welcome-btn {
+  margin-top: 20px;
+  display: inline-block;
+  padding: 5px 10px;
+  border: 2px solid black;
+  cursor: pointer;
+}
+
+#welcome.hide {
+  display: none;
+}
