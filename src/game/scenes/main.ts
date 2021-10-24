@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { bombSound, shootSound, entrySound, explosionSound } from '../assets/audio';
-import { sky, ground, fireball, dude, star } from '../assets/images';
+import { bombSound, shootSound, entrySound, collectSound } from '../assets/audio';
+import { sky, ground, fireball, dude, star, bomb } from '../assets/images';
 import { SceneSound } from './sceneSound';
 import { createWelcomeDiv } from './welcome';
 
@@ -8,19 +8,21 @@ export class MainScene extends Phaser.Scene {
   bg: Phaser.GameObjects.Image;
   platforms: Phaser.Physics.Arcade.StaticGroup;
   stars: Phaser.Physics.Arcade.Group;
+  bombs: Phaser.Physics.Arcade.Group;
+  bombsList: Array<any> = [];
   fireballs: Phaser.Physics.Arcade.Group;
   fires: Array<any> = [];
   player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
   score: number = 0;
-  life: number = 1;
+  life: number = 2;
   scoreText: Phaser.GameObjects.Text;
   lifeText: Phaser.GameObjects.Text;
   sceneSounds: SceneSound = {
-    entry: null,
-    explosion: null,
-    shoot: null,
-    bomb: null
+    entry: null, // for start game
+    collect: null, // for fire touch star
+    shoot: null, // for fire
+    bomb: null // for bomb touch player
   };
 
   shootTimer = null;
@@ -30,10 +32,11 @@ export class MainScene extends Phaser.Scene {
     this.load.image(ground.name, ground.src);
     this.load.image(fireball.name, fireball.src);
     this.load.image(star.name, star.src);
+    this.load.image(bomb.name, bomb.src);
     this.load.spritesheet(dude.name, dude.src, { frameWidth: dude.frame.width, frameHeight: dude.frame.height });
 
     this.load.audio(entrySound.name, entrySound.src);
-    this.load.audio(explosionSound.name, explosionSound.src);
+    this.load.audio(collectSound.name, collectSound.src);
     this.load.audio(shootSound.name, shootSound.src);
     this.load.audio(bombSound.name, bombSound.src);
   }
@@ -43,6 +46,8 @@ export class MainScene extends Phaser.Scene {
 
     this.platforms.create(400, 568, ground.name).setScale(2).refreshBody();
     this.platforms.create(400, (-1 * ground.height - star.height), ground.name).setScale(2).refreshBody();
+
+    return this.platforms;
   }
 
   initPlayer() {
@@ -69,6 +74,8 @@ export class MainScene extends Phaser.Scene {
       frameRate: 10,
       repeat: -1
     });
+
+    return this.player;
   }
 
   initStars() {
@@ -104,9 +111,31 @@ export class MainScene extends Phaser.Scene {
 
   initSound() {
     this.sceneSounds.entry = this.sound.add(entrySound.name);
-    this.sceneSounds.explosion = this.sound.add(explosionSound.name);
+    this.sceneSounds.collect = this.sound.add(collectSound.name);
     this.sceneSounds.shoot = this.sound.add(shootSound.name);
     this.sceneSounds.bomb = this.sound.add(bombSound.name);
+  }
+
+  getBombPosition() {
+    return {
+      x: Phaser.Math.FloatBetween(10, 790),
+      y: Phaser.Math.FloatBetween(10, 100)
+    }
+  }
+
+  initBombs() {
+    this.bombs = this.physics.add.group();
+    for (let index = 0; index < 10; index++) {
+      const { x, y } = this.getBombPosition();
+      const cBomb = this.physics.add.image(x, y, bomb.name).setOrigin(0);
+      this.bombs.add(cBomb);
+      this.bombsList.push({
+        velocityY: Phaser.Math.FloatBetween(100, 300),
+        obj: cBomb
+      });
+    }
+
+    return this.bombs;
   }
 
   shootFireBall() {
@@ -116,6 +145,33 @@ export class MainScene extends Phaser.Scene {
     fire.addToDisplayList();
     fire.addToUpdateList();
     this.sceneSounds.shoot.play();
+  }
+
+  repositionBomb(platforms: any, obj: Phaser.Types.Physics.Arcade.GameObjectWithBody) {
+    const { x, y } = this.getBombPosition();
+    obj.body.x = x;
+    obj.body.y = y;
+  }
+
+  playerTouchBomb(player: any, theBomb: any) {
+    this.sceneSounds.bomb.play();
+    player.setTint(0xff0000);
+    setTimeout(() => {
+      if (this.life > 0) {
+        player.setTint(0xffffff);
+      }
+    }, 1000);
+    player.anims.play('turn');
+    this.repositionBomb(null, theBomb);
+    this.life -= 1;
+    this.lifeText.setText('Life: ' + this.life);
+    if (this.life <= 0) {
+      setTimeout(() => {
+        this.scene.pause();
+        document.getElementById('result').classList.add('lose');
+        document.getElementById('result').innerHTML = 'LOSER';
+      }, 200);
+    }
   }
 
   repositionStar(platforms: any, obj: Phaser.Types.Physics.Arcade.GameObjectWithBody) {
@@ -147,7 +203,7 @@ export class MainScene extends Phaser.Scene {
     this.repositionFireball(null, obj2);
     this.score += 1;
     this.updateScore(this.score);
-    this.sceneSounds.explosion.play();
+    this.sceneSounds.collect.play();
   }
 
   handlePlayerMovements(player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
@@ -186,16 +242,20 @@ export class MainScene extends Phaser.Scene {
 
     this.bg = this.add.image(0, 0, sky.name).setOrigin(0, 0);
 
-    this.initPlatforms();
+    const platforms = this.initPlatforms();
 
-    this.initPlayer();
+    const bombs = this.initBombs();
+
+    const player = this.initPlayer();
 
     const stars = this.initStars();
     const fireballs = this.initFireballs();
 
-    this.physics.add.collider(this.player, this.platforms);
-    this.physics.add.collider(this.platforms, stars, this.repositionStar, null, this);
-    this.physics.add.collider(this.platforms, fireballs, this.repositionFireball, null, this);
+    this.physics.add.collider(player, platforms);
+    this.physics.add.collider(platforms, stars, this.repositionStar, null, this);
+    this.physics.add.collider(platforms, fireballs, this.repositionFireball, null, this);
+    this.physics.add.collider(platforms, bombs, this.repositionBomb, null, this);
+    this.physics.add.collider(player, bombs, this.playerTouchBomb, null, this);
     this.physics.add.overlap(stars, fireballs, this.collectScore, null, this);
 
     this.initCursor();
@@ -216,5 +276,9 @@ export class MainScene extends Phaser.Scene {
     this.handlePlayerMovements(this.player);
     this.stars.setVelocityY(-50);
     this.fireballs.setVelocityY(-200);
+    // this.bombs.setVelocityY(100);
+    this.bombsList.forEach(bombData => {
+      (bombData.obj as Phaser.Types.Physics.Arcade.ImageWithDynamicBody).setVelocityY(bombData.velocityY);
+    });
   }
 }

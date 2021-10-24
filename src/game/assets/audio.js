@@ -8,6 +8,11 @@ export const shootSound = {
   src: ['audio/lazer.wav'],
 };
 
+export const collectSound = {
+  name: 'collect',
+  src: ['audio/pistol.wav'],
+};
+
 export const explosionSound = {
   name: 'explosion',
   src: ['audio/explosion.mp3'],
