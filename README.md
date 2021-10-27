@@ -2,6 +2,14 @@
 
 Sensible webpack 5 boilerplate using Babel, PostCSS and Sass.
 
+Demo: [Play the game](https://truonggiangdao.github.io/phaser3-fire-shooter/)
+
+## Screenshots
+
+![ScreenIntro](public/images/screen-1.jpg)
+
+![ScreenGame](public/images/screen-2.jpg)
+
 ## Installation
 
 Clone this repo and npm install.
