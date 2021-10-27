@@ -1,4 +1,4 @@
-# 📦 Phaser 3 Sample Game - Fire Shooter
+# Phaser 3 Sample Game - Fire Shooter
 
 Sensible webpack 5 boilerplate using Babel, PostCSS and Sass.
 
